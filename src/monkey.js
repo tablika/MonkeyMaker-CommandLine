@@ -1,2 +1,9 @@
+#!/usr/bin/env node
 var monkey = require('monkey-maker');
-console.log(monkey);
+var cmdliner = require('cmd-liner');
+
+var commands = {
+  config: require('./config.js')
+}
+
+cmdliner.init(commands);

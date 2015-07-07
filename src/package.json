@@ -27,6 +27,8 @@
   },
   "homepage": "https://github.com/peymanmortazavi/MonkeyMaker-CommandLine#readme",
   "dependencies": {
-    "monkey-maker": "^1.0.0"
+    "cmd-liner": "^1.0.3",
+    "fs-extra": "^0.21.0",
+    "monkey-maker": "^1.0.1"
   }
 }
