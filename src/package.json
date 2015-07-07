@@ -1,0 +1,32 @@
+{
+  "name": "monkeymaker-cmdline",
+  "version": "1.0.0",
+  "description": "Command line tool for MonkeyMaker.js supporting teamcity integration and multiple config deployment.",
+  "main": "monkey.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/peymanmortazavi/MonkeyMaker-CommandLine.git"
+  },
+  "keywords": [
+    "make",
+    "build",
+    "xamarin",
+    "cmd",
+    "ios",
+    "android",
+    "mono",
+    "monkey"
+  ],
+  "author": "Peyman Mortazavi <pey.mortazavi@gmail.com> (https://www.linkedin.com/pub/peyman-mortazavi/50/b51/73b)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/peymanmortazavi/MonkeyMaker-CommandLine/issues"
+  },
+  "homepage": "https://github.com/peymanmortazavi/MonkeyMaker-CommandLine#readme",
+  "dependencies": {
+    "monkey-maker": "^1.0.0"
+  }
+}
