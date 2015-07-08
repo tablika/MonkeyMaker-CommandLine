@@ -62,7 +62,7 @@ DeployEventLogger.prototype.didFinishJob = function(job) {
     var names = '';
     for (var i = 0; i < job.status.failedConfigs.length; i++) {
       var configName = job.status.failedConfigs[i];
-      if(i == job.status.failedConfigs.length-1){
+      if(i == job.status.failedConfigs.length-1) {
         names += configName;
         break;
       }
