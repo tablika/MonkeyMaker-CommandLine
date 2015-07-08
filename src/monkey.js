@@ -1,9 +1,9 @@
 #!/usr/bin/env node
-var monkey = require('monkey-maker');
 var cmdliner = require('cmd-liner');
 
 var commands = {
-  config: require('./config.js')
+  config: require('./config.js'),
+  deploy: require('./deploy.js')
 }
 
 cmdliner.init(commands);
