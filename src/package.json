@@ -31,7 +31,7 @@
     "cmd-liner": "^1.0.3",
     "colors": "^1.1.2",
     "fs-extra": "^0.21.0",
-    "monkey-maker": "^1.0.212",
+    "monkey-maker": "^1.0.214",
     "path": "^0.11.14",
     "string-format": "^0.5.0"
   }

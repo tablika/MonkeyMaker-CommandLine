@@ -58,8 +58,7 @@ module.exports.action = function(cmd) {
     }
 
     var platforms = argv.p.split(',');
-    var job = monkey.deploy({configs: configsToBuild, platforms: platforms});
-    console.log(JSON.stringify(job, null, 2));
+    monkey.deploy({configs: configsToBuild, platforms: platforms});
 
   } catch (exception) {
     error(exception);
