@@ -48,7 +48,7 @@ DeployEventLogger.prototype.didFinishConfig = function(args) {
 }
 
 DeployEventLogger.prototype.didFailConfig = function(args) {
-  console.error(args.error.message);
+  console.error(args.error);
   console.log('Failed on task: {0}\n'.format(this.job.results[args.configName][args.platform].failedOn).red);
 }
 
