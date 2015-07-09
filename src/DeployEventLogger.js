@@ -1,6 +1,7 @@
 var format = require('string-format');
 var Table = require('cli-table');   // That nice table!
 var colors = require('colors');
+
 format.extend(String.prototype);
 
 module.exports = DeployEventLogger;
