@@ -37,7 +37,7 @@ module.exports.action = function(cmd) {
     var monkey = new Monkey(monkeyConfig);
     monkey.useEventHandler(new DeployEventLogger());
     if(argv.t) {
-      monkey.useEventHandler(new TeamCityEventLogger());
+      monkey.useEventHandler(new TeamCityEventLogger(argv.v));
     }
     if(!monkeyConfig.project) error('No project details are provided in monkey.json.');
     if(!monkeyConfig.project.solutionPath) error('path to solution file is not provided in monkey.json.');

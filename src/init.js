@@ -55,19 +55,25 @@ module.exports.action = function (cmd) {
         '<plist version="1.0">'+
         '<dict/>'+
         '</plist>';
-        fs.writeFileSync(path.join(result.iosProjectName, 'Config.plist'), defaultPlistFile);
-        fs.writeFileSync(path.join(result.iosProjectName, 'config_template.json'), '{}');
+        var plistFilePath = path.join(result.iosProjectName, 'Config.plist');
+        if(!fs.existsSync(plistFilePath)) fs.writeFileSync(plistFilePath, defaultPlistFile);
+
+        var configTemplateFilePath = path.join(result.iosProjectName, 'config_template.json');
+        if(!fs.existsSync(configTemplateFilePath)) fs.writeFileSync(configTemplateFilePath, '{}');
       }
       if(result.androidProjectName) {
         monkeyConfig.android = {
           projectName: result.androidProjectName
         }
-        fs.writeFileSync(path.join(result.androidProjectName, 'Resources', 'values', 'settings.xml'), '<?xml version="1.0" encoding="utf-8"?><resources/>');
-        fs.writeFileSync(path.join(result.androidProjectName, 'config_template.json'), '{}');
+
+        var settingsFilePath = path.join(result.androidProjectName, 'Resources', 'values', 'settings.xml');
+        if(fs.existsSync(settingsFilePath)) fs.writeFileSync(settingsFilePath, '<?xml version="1.0" encoding="utf-8"?><resources/>');
+
+        var configTemplateFilePath = path.join(result.androidProjectName, 'config_template.json')
+        if(!fs.existsSync(configTemplateFilePath)) fs.writeFileSync(configTemplateFilePath, '{}');
       }
 
       fs.writeFileSync(path.join(currentDir, 'monkey.json'), JSON.stringify(monkeyConfig, null, 2));
-
     });
 
     function onErr(err) {
