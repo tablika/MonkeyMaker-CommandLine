@@ -5,6 +5,7 @@ var colors = require('colors');     // Making it colorful!
 var format = require('string-format');
 var DeployEventLogger = require('./DeployEventLogger.js');
 var TeamCityEventLogger = require('./TeamCityEventLogger.js');
+var HockeyAppArtifactProcessor = require('monkeymaker-hockeyapp');
 
 format.extend(String.prototype);
 
@@ -22,7 +23,7 @@ module.exports.action = function(cmd) {
   var argv = cmd
       .alias('t', 'teamcity')
       .alias('v', 'verbose')
-      .alias('h', 'hockeyupload')
+      .alias('h', 'hockeyapp')
       .alias('s', 'sign')
       .alias('p', 'platform')
       .alias('c', 'config')
@@ -36,8 +37,11 @@ module.exports.action = function(cmd) {
     var monkeyConfig = JSON.parse(fs.readFileSync('monkey.json', 'utf8'));
     var monkey = new Monkey(monkeyConfig);
     monkey.useEventHandler(new DeployEventLogger());
-    if(argv.t) {
-      monkey.useEventHandler(new TeamCityEventLogger(argv.v));
+    if(argv.teamcity) {
+      monkey.useEventHandler(new TeamCityEventLogger(argv.verbose));
+    }
+    if(argv.hockeyapp) {
+      monkey.useArtifactProcessor(new HockeyAppArtifactProcessor());
     }
     if(!monkeyConfig.project) error('No project details are provided in monkey.json.');
     if(!monkeyConfig.project.solutionPath) error('path to solution file is not provided in monkey.json.');

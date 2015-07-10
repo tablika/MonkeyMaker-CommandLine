@@ -7,7 +7,7 @@ format.extend(String.prototype);
 module.exports = DeployEventLogger;
 
 function DeployEventLogger (verbose) {
-  this.verbose = verbose || false;
+  this.verbose = verbose;
 };
 
 DeployEventLogger.prototype.willStartJob = function (job) {
@@ -16,7 +16,7 @@ DeployEventLogger.prototype.willStartJob = function (job) {
 
 DeployEventLogger.prototype.willStartConfig = function (args) {
   if(this.job.status.total < 2) return;
-  console.log('[{0}/{1}] {2} ({3})'.format(args.index, this.job.status.total,
+  console.log('({0}/{1}) Deploying {2} ({3})'.format(args.index, this.job.status.total,
     args.configName, beatifyPlatform(args.platform)));
 }
 
@@ -34,6 +34,7 @@ DeployEventLogger.prototype.didInstallConfig = function (args) {
     }
   }
   if(any) console.log(table.toString());
+  console.log('[ ] Successfully installed the config.');
 }
 
 DeployEventLogger.prototype.willBuildConfig = function(args) {
@@ -41,8 +42,8 @@ DeployEventLogger.prototype.willBuildConfig = function(args) {
 }
 
 DeployEventLogger.prototype.didBuildConfig = function(args) {
+  if(this.verbose) console.log(args.buildResults.stdout);
   console.log('Build Successful!'.green);
-  console.log(args.buildResults.stdout);
 }
 
 DeployEventLogger.prototype.didFinishConfig = function(args) {
@@ -51,11 +52,11 @@ DeployEventLogger.prototype.didFinishConfig = function(args) {
 
 DeployEventLogger.prototype.didFailConfig = function(args) {
   if(args.error.stdout) {
-    console.log(args.error.stdout);
+    if(this.verbose) console.log(args.error.stdout);
     delete args.error.stdout;
   }
   console.error(JSON.stringify(args.error, null, 2));
-  console.log('Failed on task: {0}\n'.format(this.job.results[args.configName][args.platform].failedOn).red);
+  console.log('Deploy Failed for {1} ({2})\nFailed On Task: {0}\n'.format(this.job.results[args.configName][args.platform].failedOn, args.configName, beatifyPlatform(args.platform)).red);
 }
 
 DeployEventLogger.prototype.willProcessArtifact = function (args) {
@@ -63,9 +64,9 @@ DeployEventLogger.prototype.willProcessArtifact = function (args) {
 }
 
 DeployEventLogger.prototype.didFinishJob = function(job) {
-  if(job.status.failed == 0) console.log("Deployed {0} successfully.".format(job.status.total>1?job.status.total+' projects':job.status.successfulConfigs[0]));
+  if(job.status.failed == 0) console.log("Deployed {0} successfully.".format(job.status.total>1?job.status.total+' projects':job.status.successfulConfigs[0]).green);
   else {
-    console.log('Deploy Failed!'.red);
+    console.log('Some Deploys Failed!'.red);
     var names = '';
     for (var i = 0; i < job.status.failedConfigs.length; i++) {
       var configName = job.status.failedConfigs[i];
@@ -75,7 +76,7 @@ DeployEventLogger.prototype.didFinishJob = function(job) {
       }
       names += configName + ', ';
     }
-    console.log('({0}/{1}) Failed: {2}'.format(job.status.failed, job.status.total, names).red);
+    console.log('\t{0} Failed: {2}\n\t{1} Successful'.format(job.status.failed, job.status.successful, names).red);
     console.log();
   }
 }
