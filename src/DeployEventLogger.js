@@ -45,10 +45,11 @@ DeployEventLogger.prototype.didBuildConfig = function(args) {
 
 DeployEventLogger.prototype.didFinishConfig = function(args) {
   console.log('[X] DONE\n'.green);
+  console.log(JSON.stringify(this.job, null, 2));
 }
 
 DeployEventLogger.prototype.didFailConfig = function(args) {
-  console.error(args.error);
+  console.error(JSON.stringify(args.error, null, 2));
   console.log('Failed on task: {0}\n'.format(this.job.results[args.configName][args.platform].failedOn).red);
 }
 
@@ -57,6 +58,7 @@ DeployEventLogger.prototype.willProcessArtifact = function (args) {
 }
 
 DeployEventLogger.prototype.didFinishJob = function(job) {
+  console.log(JSON.stringify(job, null, 2));
   if(job.status.failed == 0) console.log("Deployed {0} successfully.".format(job.status.total>1?job.status.total+' projects':job.status.successfulConfigs[0]));
   else {
     console.log('Deploy Failed!'.red);
