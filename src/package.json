@@ -1,6 +1,6 @@
 {
   "name": "monkeymaker-cmdline",
-  "version": "1.0.2",
+  "version": "1.0.5",
   "description": "Command line tool for MonkeyMaker.js supporting teamcity integration and multiple config deployment.",
   "main": "monkey.js",
   "scripts": {
@@ -36,7 +36,7 @@
     "colors": "^1.1.2",
     "fs-extra": "^0.21.0",
     "monkey-maker": "^1.0.326",
-    "monkeymaker-hockeyapp": "^1.0.7",
+    "monkeymaker-hockeyapp": "^1.0.8",
     "path": "^0.11.14",
     "prompt": "^0.2.14",
     "string-format": "^0.5.0",
