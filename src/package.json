@@ -35,7 +35,7 @@
     "cmd-liner": "^1.0.31",
     "colors": "^1.1.2",
     "fs-extra": "^0.21.0",
-    "monkey-maker": "^1.0.324",
+    "monkey-maker": "^1.0.326",
     "monkeymaker-hockeyapp": "^1.0.7",
     "path": "^0.11.14",
     "prompt": "^0.2.14",

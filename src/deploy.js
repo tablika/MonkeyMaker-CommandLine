@@ -24,7 +24,7 @@ module.exports.action = function(cmd) {
       .alias('t', 'teamcity')
       .alias('v', 'verbose')
       .alias('h', 'hockeyapp')
-      .alias('s', 'sign')
+      .alias('s', 'store_release')
       .alias('p', 'platform')
       .alias('c', 'config')
       .demand(['c','p'])
@@ -38,9 +38,11 @@ module.exports.action = function(cmd) {
     var monkey = new Monkey(monkeyConfig);
 
     monkey.useEventHandler(new DeployEventLogger(argv.verbose));
+
     if(argv.teamcity) {
       monkey.useEventHandler(new TeamCityEventLogger());
     }
+
     if(argv.hockeyapp) {
       monkey.useArtifactProcessor(new HockeyAppArtifactProcessor());
     }
@@ -68,7 +70,12 @@ module.exports.action = function(cmd) {
     }
 
     var platforms = argv.p.split(',');
-    monkey.deploy({configs: configsToBuild, platforms: platforms});
+    var deployParams = {configs: configsToBuild, platforms: platforms};
+    
+    if(argv.version) deployParams.version = argv.version;
+    if(argv.store_release) deployParams.store_release = true;
+
+    monkey.deploy(deployParams);
 
   } catch (exception) {
     error(exception);
