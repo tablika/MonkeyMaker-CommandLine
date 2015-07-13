@@ -36,13 +36,15 @@ module.exports.action = function(cmd) {
   try {
     var monkeyConfig = JSON.parse(fs.readFileSync('monkey.json', 'utf8'));
     var monkey = new Monkey(monkeyConfig);
-    monkey.useEventHandler(new DeployEventLogger());
+
+    monkey.useEventHandler(new DeployEventLogger(argv.verbose));
     if(argv.teamcity) {
-      monkey.useEventHandler(new TeamCityEventLogger(argv.verbose));
+      monkey.useEventHandler(new TeamCityEventLogger());
     }
     if(argv.hockeyapp) {
       monkey.useArtifactProcessor(new HockeyAppArtifactProcessor());
     }
+
     if(!monkeyConfig.project) error('No project details are provided in monkey.json.');
     if(!monkeyConfig.project.solutionPath) error('path to solution file is not provided in monkey.json.');
     var solutionPath = monkeyConfig.project.solutionPath;

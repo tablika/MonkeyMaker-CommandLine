@@ -63,6 +63,10 @@ DeployEventLogger.prototype.willProcessArtifact = function (args) {
   console.log('[ ] Processing artifact ({0})'.format(args.artifactProcessorName));
 }
 
+DeployEventLogger.prototype.didProcessArtifact = function (args) {
+  console.log('[ ] Finished ({0})'.format(args.artifactProcessorName).green);
+}
+
 DeployEventLogger.prototype.didFinishJob = function(job) {
   if(job.status.failed == 0) console.log("Deployed {0} successfully.".format(job.status.total>1?job.status.total+' projects':job.status.successfulConfigs[0]).green);
   else {
