@@ -28,7 +28,7 @@ module.exports.action = function(cmd) {
       .alias('p', 'platform')
       .alias('c', 'config')
       .demand(['c','p'])
-      .usage('make build [OPTIONS]').argv;
+      .usage('monkey deploy [OPTIONS]').argv;
 
   if(argv.sign && argv.hockeyupload)
     error('Cannot upload binaries signed for production to HockeyApp.');
@@ -71,7 +71,7 @@ module.exports.action = function(cmd) {
 
     var platforms = argv.p.split(',');
     var deployParams = {configs: configsToBuild, platforms: platforms};
-    
+
     if(argv.version) deployParams.version = argv.version;
     if(argv.store_release) deployParams.store_release = true;
 
