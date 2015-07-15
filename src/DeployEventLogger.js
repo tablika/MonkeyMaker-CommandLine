@@ -4,53 +4,54 @@ var colors = require('colors');
 
 format.extend(String.prototype);
 
-module.exports = DeployEventLogger;
-
-function DeployEventLogger (verbose) {
+module.exports = function(verbose) {
   this.verbose = verbose;
 };
 
-DeployEventLogger.prototype.willStartJob = function (job) {
+module.exports.prototype.willStartJob = function (job) {
   this.job = job;
 }
 
-DeployEventLogger.prototype.willStartConfig = function (args) {
+module.exports.prototype.willStartConfig = function (args) {
   if(this.job.status.total < 2) return;
   console.log('({0}/{1}) Deploying {2} ({3})'.format(args.index, this.job.status.total,
     args.configName, beatifyPlatform(args.platform)));
 }
 
-DeployEventLogger.prototype.didInstallConfig = function (args) {
+module.exports.prototype.didEscapeConfig = function(args) {
+  console.log("[ESCAPE] Config {0} is not setup for platform {1}; escaping.".format(args.configName, beatifyPlatform(args.platform)).yellow);
+}
+
+module.exports.prototype.didInstallConfig = function (args) {
   var table = new Table({ chars: { 'top': '-' , 'top-mid': '-' , 'top-left': '-' , 'top-right': '-'
     , 'bottom': '-' , 'bottom-mid': '-' , 'bottom-left': '-' , 'bottom-right': '-'
     , 'left': '' , 'left-mid': '' , 'mid': '' , 'mid-mid': ''
     , 'right': '' , 'right-mid': '' , 'middle': ':' }, style: { head: ['yellow'], border: ['yellow'] }});
 
-  any = false;
-  for (var key in args.configs) {
-    if (args.configs.hasOwnProperty(key)) {
-      any = true;
-      table.push([key, args.configs[key]]);
-    }
+  var any = false;
+  var nameValuePair = args.configSettings.flatten('name', 'value');
+  for (var name in nameValuePair) {
+    any = true;
+    table.push([name, nameValuePair[name]]);
   }
   if(any) console.log(table.toString());
   console.log('[ ] Successfully installed the config.');
 }
 
-DeployEventLogger.prototype.willBuildConfig = function(args) {
+module.exports.prototype.willBuildConfig = function(args) {
   console.log('[ ] Building...');
 }
 
-DeployEventLogger.prototype.didBuildConfig = function(args) {
+module.exports.prototype.didBuildConfig = function(args) {
   if(this.verbose) console.log(args.buildResults.stdout);
   console.log('Build Successful!'.green);
 }
 
-DeployEventLogger.prototype.didFinishConfig = function(args) {
+module.exports.prototype.didFinishConfig = function(args) {
   console.log('[X] DONE\n'.green);
 }
 
-DeployEventLogger.prototype.didFailConfig = function(args) {
+module.exports.prototype.didFailConfig = function(args) {
   if(args.error.stdout) {
     if(this.verbose) console.log(args.error.stdout);
     delete args.error.stdout;
@@ -59,15 +60,15 @@ DeployEventLogger.prototype.didFailConfig = function(args) {
   console.log('Deploy Failed for {1} ({2})\nFailed On Task: {0}\n'.format(this.job.results[args.configName][args.platform].failedOn, args.configName, beatifyPlatform(args.platform)).red);
 }
 
-DeployEventLogger.prototype.willProcessArtifact = function (args) {
+module.exports.prototype.willProcessArtifact = function (args) {
   console.log('[ ] Processing artifact ({0})'.format(args.artifactProcessorName));
 }
 
-DeployEventLogger.prototype.didProcessArtifact = function (args) {
+module.exports.prototype.didProcessArtifact = function (args) {
   console.log('[ ] Finished ({0})'.format(args.artifactProcessorName).green);
 }
 
-DeployEventLogger.prototype.didFinishJob = function(job) {
+module.exports.prototype.didFinishJob = function(job) {
   if(job.status.failed == 0) console.log("Deployed {0} successfully.".format(job.status.total>1?job.status.total+' projects':job.status.successfulConfigs[0]).green);
   else {
     console.log('Some Deploys Failed!'.red);

@@ -3,6 +3,8 @@ var path = require('path');
 var Monkey = require('monkey-maker');
 var colors = require('colors');     // Making it colorful!
 var format = require('string-format');
+var configUtil = require('config-util');
+
 var DeployEventLogger = require('./DeployEventLogger.js');
 var TeamCityEventLogger = require('./TeamCityEventLogger.js');
 var HockeyAppArtifactProcessor = require('monkeymaker-hockeyapp');
@@ -54,11 +56,11 @@ module.exports.action = function(cmd) {
       solutionPath = path.resolve(solutionPath);
     }
     process.chdir(path.dirname(solutionPath));
-    monkeyConfig = monkey.configUtil.evaluate(projectConfigTemplate, monkeyConfig);
+    monkeyConfig = configUtil.evaluate(monkey.optionsTemplate, monkeyConfig);
     if(!monkeyConfig.isValid) listValidationErrors(monkeyConfig.errors);
-    monkeyConfig = monkeyConfig.config;
+    monkeyConfig = monkeyConfig.compile();
 
-    var dir_list = getDirectories(path.resolve(monkeyConfig.project.configsPath.value));
+    var dir_list = getDirectories(path.resolve(monkeyConfig.project.configsPath));
     var configsToBuild = [];
 
     // Either regular expression or commas
