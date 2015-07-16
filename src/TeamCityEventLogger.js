@@ -23,7 +23,7 @@ module.exports.prototype.willBuildConfig = function(args) {
 }
 
 module.exports.prototype.willProcessArtifact = function(args) {
-  this.update_status('Processing Artifact (0)'.format(args.artifactProcessorName), args);
+  this.update_status('Processing Artifact ({0})'.format(args.artifactProcessorName), args);
 }
 
 module.exports.prototype.didFinishConfig = function(args) {
