@@ -30,6 +30,11 @@ module.exports.prototype.didFinishConfig = function(args) {
   console.log("##teamcity[blockClosed name='{0} ({1})']".format(args.configName, beatifyPlatform(args.platform)));
 }
 
+module.exports.prototype.didFailConfig = function(args) {
+  console.log("##teamcity[message text='Deploy Failed' status='ERROR']");
+  console.log("##teamcity[blockClosed name='{0} ({1})']".format(args.configName, beatifyPlatform(args.platform)));
+}
+
 module.exports.prototype.update_status = function(status, args) {
   console.log("##teamcity[progressMessage '({0}/{1}) {4} {2} ({3})']".format(args.index, this.job.status.total, args.configName, beatifyPlatform(args.platform), status));
 }

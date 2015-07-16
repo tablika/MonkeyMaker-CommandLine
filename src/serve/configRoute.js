@@ -11,12 +11,6 @@ var LINQ = require('node-linq').LINQ;
 
 var app = express();
 app.use(bodyParser.json());
-app.use(multer({
-  dest: path.join(os.tmpdir(), 'com.monkey.Server', 'uploads'),
-  rename: function (fieldname, filename) {
-    return filename.replace(/\W+/g, '-').toLowerCase() + Date.now()
-  }
-}));
 
 module.exports = app;
 
@@ -24,6 +18,13 @@ var monkeyOptions = JSON.parse(fs.readFileSync('monkey.json', 'utf8'));
 monkeyOptions.project.configsPath = '/Users/peyman/Desktop/jaja';
 fs.mkdirsSync(monkeyOptions.project.configsPath);
 var monkey = new Monkey(monkeyOptions);
+
+app.use(multer({
+  dest: './.temp/uploads',
+  rename: function (fieldname, filename) {
+    return filename.replace(/\W+/g, '-').toLowerCase() + Date.now()
+  }
+}));
 
 app.post('/', function (req, res) {
 
@@ -163,13 +164,56 @@ app.get('/:name/resources/:filename', function (req, res) {
 
 });
 
-app.post('/:name/save', function (req, res) {
+app.get('/:name/validation', function (req, res) {
 
-  // Step1: Make sure settings are fine.
-  // Step2: Make sure images are fine.
-  // Step3: Commit changes to git.
+  res.send(getValidationResult(req.params.name));
 
 });
+
+function getValidationResult(configName) {
+
+  var response = {};
+
+  // Step1: Make sure settings are fine.
+  var configInfo = monkey.getConfigInfo(configName, 'ios');
+  var configFilePath = path.join(configInfo.configPath, 'config.json');
+  if(fs.existsSync(configFilePath)) {
+
+    var originalConfigFile = JSON.parse(fs.readFileSync(configFilePath, 'utf8'));
+    var templateConfigFile = JSON.parse(fs.readFileSync(configInfo.configTemplateFilePath, 'utf8'));
+    var evaluationResult = configUtil.evaluate(templateConfigFile, originalConfigFile);
+
+    if(!evaluationResult.isValid) {
+      response.setValueForKeyPath('settings.isValid', false);
+      response.setValueForKeyPath('settings.errors', evaluationResult.errors);
+    } else {
+      response.setValueForKeyPath('settings.isValid', true);
+      response.setValueForKeyPath('settings.errors', null);
+    }
+
+  } else { throw { msg: 'The settings file is not even created.' }; }
+
+  // Step2: Make sure resources are fine.
+  var appResourceList = monkey.options.ios.resources;
+  if(!appResourceList) throw { message: 'iOS resources are not setup. No resource file is accepted as a result.' };
+
+  var resourceFiles = fs.readdirSync(path.join(configInfo.configPath, 'resources'))
+    .filter(function(x) { return /^[.]/.exec(x) ==null });
+
+  response.resources = {isValid: true, remainingFiles: []};
+  for(var key in appResourceList) {
+    if(resourceFiles.indexOf(key) == -1) {
+      response.resources.isValid = false;
+      response.resources.remainingFiles.push(appResourceList[key]);
+    }
+  }
+
+  response.isValid = (response.settings.isValid && response.resources.isValid);
+
+  return response;
+  // Step3: AppStore info.
+
+}
 
 function error(res, message, status) {
   message = typeof(message) == 'string' ? {message: message} : message;
