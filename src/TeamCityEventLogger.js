@@ -40,6 +40,7 @@ module.exports.prototype.didFinishJob = function(job) {
   if(job.status.failed > 0) {
     status = 'failed'
     text = '({0}/{1}) Projects failed.'.format(job.status.failed, job.status.total);
+    console.log("##teamcity[message text='{0}' status='ERROR']".format(text));
   } else {
     status = 'success';
     text = 'Successful.';
