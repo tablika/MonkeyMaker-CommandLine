@@ -8,38 +8,117 @@ var multer = require('multer');
 var os = require('os');
 var sizeOf = require('image-size');
 var LINQ = require('node-linq').LINQ;
+//var Git = require('nodegit');
+var format = require('string-format');
+var exec = require('child_process').exec;
 
+format.extend(String.prototype);
+
+// Global Variables
+var GIT_AUTHOR_USERNAME = "MonkeyMaker Build API";
+var GIT_AUTHOR_EMAIL = "monkey@maker.com"
+var workingDirectory = '/Users/peyman/Desktop/mk';
+fs.mkdirsSync(workingDirectory);
+
+// Setup express
 var app = express();
 app.use(bodyParser.json());
-
 module.exports = app;
 
+// Setup monkey
 var monkeyOptions = JSON.parse(fs.readFileSync('monkey.json', 'utf8'));
-monkeyOptions.project.configsPath = '/Users/peyman/Desktop/jaja';
-fs.mkdirsSync(monkeyOptions.project.configsPath);
+monkeyOptions.project.configsPath = path.join(workingDirectory, 'repo');
 var monkey = new Monkey(monkeyOptions);
 
+// Setup Git
+var configsRepo = null;
+var repoPath = path.join(workingDirectory, 'repo');
+
+var fetchRepo = function(repo) {
+  return repo.fetch("origin", {
+    credentials: function(url, userName) {
+      return Git.Cred.userpassPlaintextNew(userName, monkey.options.server.getValueForKeyPath('repository.pass'));
+    }
+  });
+}
+if(!fs.existsSync(repoPath)) {
+  exec('cd {0} && git clone {1} repo'.format(workingDirectory, monkey.options.getValueForKeyPath('server.repository.url')), function(err){
+    console.error(err);
+  })
+  //console.log(x);
+  // Git.clone(monkey.options.getValueForKeyPath('server.repository.url'), repoPath, function(err){console.log(err)});
+  //
+  // configsRepo = Git.Repository.open(repoPath).then(function(repo) {
+  //   configsRepo = repo;
+  //   return repo;
+  // }).then(fetchRepo).catch(function(err){console.log(err)});
+} else {
+  // Git.Clone(monkey.options.getValueForKeyPath('server.repository.url'), repoPath, {
+  //   remoteCallbacks: {
+  //     credentials: function(url, userName) {
+  //       return Git.Cred.userpassPlaintextNew(userName, monkey.options.server.getValueForKeyPath('repository.pass'));
+  //     },
+  //     certificateCheck: function() { return 1; }
+  //   }
+  // }).catch(function(err){console.error(err);})
+  // .then(function(repo){configsRepo = repo; return repo;}).then(fetchRepo);
+}
+
+// Setup uploader
 app.use(multer({
-  dest: './.temp/uploads',
+  dest: path.join(workingDirectory, 'uploads'),
   rename: function (fieldname, filename) {
     return filename.replace(/\W+/g, '-').toLowerCase() + Date.now()
   }
 }));
 
+// Git Functions
+function pushChangesFor (configName) {
+
+  exec('cd {0} && git add {1}/ios && git commit -m "updated {1} for iOS" && git push origin master'.format(repoPath, configName), function(err){
+    console.error(err);
+  })
+
+  // configsRepo.openIndex()
+  // .then(function(index){
+  //   index.addByPath(path.join(configName, 'ios'));
+  //   index.write();
+  //   return index.writeTree();
+  // })
+  // .then(function(t){
+  //   return configsRepo.getTree(t);
+  // })
+  // .then(function(t){
+  //   tree = t;
+  //   return Git.Reference.nameToId(configsRepo, "HEAD");
+  // })
+  // // .then(function(head) {
+  // //   console.log(head);
+  // //   return configsRepo.getCommit(head);
+  // // })
+  // .then(function(head) {
+  //   console.log(head);
+  //   author = Git.Signature.now(GIT_AUTHOR_USERNAME, GIT_AUTHOR_EMAIL);
+  //   committer = Git.Signature.now(GIT_AUTHOR_USERNAME, GIT_AUTHOR_EMAIL);
+  //   return Git.Commit.create(configsRepo, "HEAD", author, committer, "UTF-8", "Updated " + configName + " for iOS.", tree, 1, [head]);
+  // }).then(function(x){console.log("HI"); console.log(x); return x;})
+  // .catch(function (err){console.log(err)});
+}
+
+// API
 app.post('/', function (req, res) {
 
   var params = configUtil.evaluate({platform: 'string', name: 'string'}, req.body);
   if(!params.isValid) throw {message: 'Parameters are invalid.', errors: results.errors};
   var params = params.compile();
 
-  console.log(monkey.options);
   var configRootPath = path.join(monkey.options.project.configsPath, params.name);
 
   if(fs.existsSync(configRootPath)) {
     error(res, 'Name is already taken.', 409);
     return;
   }
-  if(params.platform.toLowerCase() != 'ios'){
+  if(params.platform.toLowerCase() != 'ios') {
     error(res, 'Platform is not supported yet.');
     return;
   }
@@ -53,11 +132,19 @@ app.post('/', function (req, res) {
 
 });
 
+app.get('/', function (req, res) {
+  res.send(fs.readdirSync(repoPath).filter(function(file) {
+    return /^[.]/.exec(file) ==null &&
+      fs.statSync(path.join(repoPath, file)).isDirectory();
+  }));
+})
+
 app.get('/:name', function (req, res) {
 
   var name = req.params.name;
   var configInfo = monkey.getConfigInfo(name, 'ios');
   var configFilePath = path.join(configInfo.configPath, 'config.json');
+  console.log(configFilePath);
   if(fs.existsSync(configFilePath)) {
 
     var originalConfigFile = JSON.parse(fs.readFileSync(configFilePath, 'utf8'));
@@ -72,6 +159,8 @@ app.get('/:name', function (req, res) {
       .map(function(x) {
         return { name: x, url: path.join(req.originalUrl, 'resources', x) };
       });
+
+    response.isReady = getValidationResult(name).isValid;
     res.send(response);
 
   } else {
@@ -99,6 +188,9 @@ app.put('/:name/settings', function(req, res, next) {
 
     var response = {};
     response.settings = evaluationResult.compile();
+    if(getValidationResult(name).isValid){
+      pushChangesFor(name);
+    }
     res.send(response);
 
   } else {
@@ -202,7 +294,7 @@ function getValidationResult(configName) {
 
   response.resources = {isValid: true, remainingFiles: []};
   for(var key in appResourceList) {
-    if(resourceFiles.indexOf(key) == -1) {
+    if(resourceFiles.indexOf(appResourceList[key].name) == -1) {
       response.resources.isValid = false;
       response.resources.remainingFiles.push(appResourceList[key]);
     }
