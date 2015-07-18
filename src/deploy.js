@@ -8,6 +8,8 @@ var configUtil = require('config-util');
 var DeployEventLogger = require('./DeployEventLogger.js');
 var TeamCityEventLogger = require('./TeamCityEventLogger.js');
 var HockeyAppArtifactProcessor = require('monkeymaker-hockeyapp');
+var iTunesConnectEventHandler = require('./iTunesConnect/iTunesConnectEventHandler.js');
+var iTunesConnectArtifactProcessor = require('./iTunesConnect/iTunesConnectArtifactProcessor');
 
 format.extend(String.prototype);
 
@@ -26,6 +28,7 @@ module.exports.action = function(cmd) {
       .alias('t', 'teamcity')
       .alias('v', 'verbose')
       .alias('h', 'hockeyapp')
+      .alias('i', 'itunesconnect')
       .alias('s', 'store_release')
       .alias('p', 'platform')
       .alias('c', 'config')
@@ -43,6 +46,15 @@ module.exports.action = function(cmd) {
 
     if(argv.teamcity) {
       monkey.useEventHandler(new TeamCityEventLogger());
+    }
+
+    if(argv.updatecert) {
+      monkey.useEventHandler(new iTunesConnectEventHandler(monkey));
+    }
+
+    if(argv.itunesconnect) {
+      monkey.useArtifactProcessor(new iTunesConnectArtifactProcessor(monkey));
+      argv.store_release = true;
     }
 
     if(argv.hockeyapp) {
