@@ -9,7 +9,7 @@ var commands = {
   serve: require('./serve/serve.js'),
   test: {action: function(){
     var exec = require('sync-exec');
-    var results = exec('deliver testflight ./app.ipa', {env:{
+    var results = exec('deliver testflight /Users/peyman/Projects/Tablika/src/output/tablika.prod/ios/app.ipa', {env:{
       'DELIVER_USER': 'app@tablika.com',
       'DELIVER_PASSWORD': 'SMhereitis@123'
     }})

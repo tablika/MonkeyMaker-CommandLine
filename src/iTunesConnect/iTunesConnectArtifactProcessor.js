@@ -33,7 +33,7 @@ module.exports.prototype.process = function (args) {
     'DELIVER_PASSWORD': config.password
   };
   console.log(args.outputUrl);
-  var results = exec('deliver testflight ' + args.outputUrl, {env: deliverParams});
+  var results = exec('echo $HOME');//exec('deliver testflight ' + args.outputUrl, {env: deliverParams});
   if(results.status != 0) {
     console.log(results.stdout);
     console.log(results.stderr);
