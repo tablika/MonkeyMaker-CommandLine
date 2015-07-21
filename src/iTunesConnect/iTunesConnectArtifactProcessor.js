@@ -28,17 +28,8 @@ module.exports.prototype.process = function (args) {
     console.error('Monkey config is not setup properly for iTunes Connect.');
   }
   var config = evaluationResult.compile().itunesConnect;
-  var deliverParams = {
-    'DELIVER_USER': config.username,
-    'DELIVER_PASSWORD': config.password
-  };
-  console.log(args.outputUrl);
-  var results = exec('echo $HOME');//exec('deliver testflight ' + args.outputUrl, {env: deliverParams});
-  if(results.status != 0) {
-    console.log(results.stdout);
-    console.log(results.stderr);
-    console.log(results);
-    return { success: false };
-  }
-  return { success: true };
+  var results = exec('export DELIVER_USER="{0}" && export DELIVER_PASSWORD="{1}" && deliver testflight -f --skip-deploy {2}'.format(config.username, config.password, args.outputUrl);
+  console.log(results.stderr);
+  console.log(results.stdout);
+  return { success: results.status==0 };
 }

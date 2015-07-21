@@ -8,7 +8,6 @@ var multer = require('multer');
 var os = require('os');
 var sizeOf = require('image-size');
 var LINQ = require('node-linq').LINQ;
-//var Git = require('nodegit');
 var format = require('string-format');
 var exec = require('child_process').exec;
 
@@ -17,7 +16,8 @@ format.extend(String.prototype);
 // Global Variables
 var GIT_AUTHOR_USERNAME = "MonkeyMaker Build API";
 var GIT_AUTHOR_EMAIL = "monkey@maker.com"
-var workingDirectory = '/Users/peyman/Desktop/mk';
+var workingDirectory = path.join(os.tmpdir(), 'com.monkey.BuildAPI');
+console.log('Operating at: ' + workingDirectory);
 fs.mkdirsSync(workingDirectory);
 
 // Setup express
@@ -31,37 +31,12 @@ monkeyOptions.project.configsPath = path.join(workingDirectory, 'repo');
 var monkey = new Monkey(monkeyOptions);
 
 // Setup Git
-var configsRepo = null;
 var repoPath = path.join(workingDirectory, 'repo');
 
-var fetchRepo = function(repo) {
-  return repo.fetch("origin", {
-    credentials: function(url, userName) {
-      return Git.Cred.userpassPlaintextNew(userName, monkey.options.server.getValueForKeyPath('repository.pass'));
-    }
-  });
-}
 if(!fs.existsSync(repoPath)) {
   exec('cd {0} && git clone {1} repo'.format(workingDirectory, monkey.options.getValueForKeyPath('server.repository.url')), function(err){
     console.error(err);
   })
-  //console.log(x);
-  // Git.clone(monkey.options.getValueForKeyPath('server.repository.url'), repoPath, function(err){console.log(err)});
-  //
-  // configsRepo = Git.Repository.open(repoPath).then(function(repo) {
-  //   configsRepo = repo;
-  //   return repo;
-  // }).then(fetchRepo).catch(function(err){console.log(err)});
-} else {
-  // Git.Clone(monkey.options.getValueForKeyPath('server.repository.url'), repoPath, {
-  //   remoteCallbacks: {
-  //     credentials: function(url, userName) {
-  //       return Git.Cred.userpassPlaintextNew(userName, monkey.options.server.getValueForKeyPath('repository.pass'));
-  //     },
-  //     certificateCheck: function() { return 1; }
-  //   }
-  // }).catch(function(err){console.error(err);})
-  // .then(function(repo){configsRepo = repo; return repo;}).then(fetchRepo);
 }
 
 // Setup uploader
@@ -78,31 +53,28 @@ function pushChangesFor (configName) {
   exec('cd {0} && git add {1}/ios && git commit -m "updated {1} for iOS" && git push origin master'.format(repoPath, configName), function(err){
     console.error(err);
   })
+}
 
-  // configsRepo.openIndex()
-  // .then(function(index){
-  //   index.addByPath(path.join(configName, 'ios'));
-  //   index.write();
-  //   return index.writeTree();
-  // })
-  // .then(function(t){
-  //   return configsRepo.getTree(t);
-  // })
-  // .then(function(t){
-  //   tree = t;
-  //   return Git.Reference.nameToId(configsRepo, "HEAD");
-  // })
-  // // .then(function(head) {
-  // //   console.log(head);
-  // //   return configsRepo.getCommit(head);
-  // // })
-  // .then(function(head) {
-  //   console.log(head);
-  //   author = Git.Signature.now(GIT_AUTHOR_USERNAME, GIT_AUTHOR_EMAIL);
-  //   committer = Git.Signature.now(GIT_AUTHOR_USERNAME, GIT_AUTHOR_EMAIL);
-  //   return Git.Commit.create(configsRepo, "HEAD", author, committer, "UTF-8", "Updated " + configName + " for iOS.", tree, 1, [head]);
-  // }).then(function(x){console.log("HI"); console.log(x); return x;})
-  // .catch(function (err){console.log(err)});
+function saveChangesIfValid (configInfo) {
+  var bag = { };
+  if(getValidationResult(configInfo.configName, bag).isValid) {
+    var certsPath = path.join(configInfo.configPath, 'certs');
+    fs.mkdirsSync(certsPath);
+    var cmd = 'cd {0} && export DELIVER_USER="{1}" && ';
+    cmd += 'export DELIVER_PASSWORD="{2}" && ';
+    cmd += 'export SIGH_APP_IDENTIFIER="{3}" && ';
+    cmd += 'export SIGH_PROVISIONING_PROFILE_NAME="{4} Distribution (MonkeyMaker)" && ';
+    cmd += 'sigh -q "{4}.mobileprovision" && ';
+    cmd += 'export PEM_APP_IDENTIFIER="{3}" && ';
+    cmd += 'export PEM_SAVE_PRIVATEKEY="1" && ';
+    cmd += 'pem -g -s -o apns_cert.pem';
+    cmd = cmd.format(certsPath, monkey.options.itunesConnect.username,
+          monkey.options.itunesConnect.password, bag.compiledConfig.app.bundleId,
+          bag.compiledConfig.app.name);
+    exec(cmd, function() {
+      pushChangesFor(configInfo.configName);
+    });
+  }
 }
 
 // API
@@ -183,14 +155,12 @@ app.put('/:name/settings', function(req, res, next) {
     if(!evaluationResult.isValid) {
       return next({ message: 'Settings are not valid.', errors: evaluationResult.errors });
     };
-
-    fs.writeFileSync(configFilePath, JSON.stringify(evaluationResult.compile(), null, 2));
+    var compiledConfig = evaluationResult.compile();
+    fs.writeFileSync(configFilePath, JSON.stringify(compiledConfig, null, 2));
 
     var response = {};
-    response.settings = evaluationResult.compile();
-    if(getValidationResult(name).isValid){
-      pushChangesFor(name);
-    }
+    response.settings = compiledConfig;
+    saveChangesIfValid(configInfo);
     res.send(response);
 
   } else {
@@ -202,6 +172,11 @@ app.put('/:name/settings', function(req, res, next) {
 app.put('/:name/resources', function (req,res) {
   var name = req.params.name;
   var configInfo = monkey.getConfigInfo(name, 'ios');
+  var configFilePath = path.join(configInfo.configPath, 'config.json');
+  if(!fs.existsSync(configFilePath)){
+    error(res, 'Config not found.', 404);
+    return;
+  }
 
   var appResourceList = monkey.options.ios.resources;
   if(!appResourceList) throw { errorMessage: 'iOS resources are not setup. set them up in monkey.json: ios.resources' };
@@ -237,6 +212,7 @@ app.put('/:name/resources', function (req,res) {
     fs.copySync(uploadedFile.path, path.join(configInfo.configPath, 'resources', file));
     fs.removeSync(uploadedFile.path);
   }
+  saveChangesIfValid(configInfo);
   res.status(200).send(response);
 });
 
@@ -262,7 +238,7 @@ app.get('/:name/validation', function (req, res) {
 
 });
 
-function getValidationResult(configName) {
+function getValidationResult(configName, bag) {
 
   var response = {};
 
@@ -281,6 +257,7 @@ function getValidationResult(configName) {
     } else {
       response.setValueForKeyPath('settings.isValid', true);
       response.setValueForKeyPath('settings.errors', null);
+      if (bag) { bag.compiledConfig = evaluationResult.compile() }
     }
 
   } else { throw { msg: 'The settings file is not even created.' }; }
@@ -303,7 +280,6 @@ function getValidationResult(configName) {
   response.isValid = (response.settings.isValid && response.resources.isValid);
 
   return response;
-  // Step3: AppStore info.
 
 }
 

@@ -27,7 +27,6 @@ module.exports.commands.set = {
     } catch(exception) {
       console.error('Could not find/load monkey.json');
     }
-
   }
 }
 
@@ -55,6 +54,9 @@ function processFlags(cmd) {
       , 'right': '' , 'right-mid': '' , 'middle': ':' }, style: { }});
 
     var monkeyConfig = JSON.parse(fs.readFileSync('monkey.json', 'utf8'));
+    if(monkeyConfig.ios && monkeyConfig.ios.resources){
+      delete monkeyConfig.ios.resources;
+    }
     var keyValuePair = flatten(monkeyConfig);
     for(key in keyValuePair) {
       table.push([key, keyValuePair[key]]);
