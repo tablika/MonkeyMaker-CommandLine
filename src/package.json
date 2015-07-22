@@ -1,6 +1,6 @@
 {
   "name": "monkeymaker-cmdline",
-  "version": "1.0.18",
+  "version": "1.0.19",
   "description": "Command line tool for MonkeyMaker.js supporting teamcity integration and multiple config deployment.",
   "main": "monkey.js",
   "scripts": {
