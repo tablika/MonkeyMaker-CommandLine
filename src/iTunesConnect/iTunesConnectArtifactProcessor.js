@@ -28,7 +28,7 @@ module.exports.prototype.process = function (args) {
     console.error('Monkey config is not setup properly for iTunes Connect.');
   }
   var config = evaluationResult.compile().itunesConnect;
-  var results = exec('export DELIVER_USER="{0}" && export DELIVER_PASSWORD="{1}" && deliver testflight -f --skip-deploy {2}'.format(config.username, config.password, args.outputUrl);
+  var results = exec('export DELIVER_USER="{0}" && export DELIVER_PASSWORD="{1}" && deliver testflight -f --skip-deploy {2}'.format(config.username, config.password, args.outputUrl));
   console.log(results.stderr);
   console.log(results.stdout);
   return { success: results.status==0 };

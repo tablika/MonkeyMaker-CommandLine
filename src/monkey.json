@@ -1,0 +1,40 @@
+{
+  "project": {
+    "solutionPath": "/Users/peyman/Projects/Tablika/src/CAIL.sln"
+  },
+  "ios": {
+    "projectName": "Cail.iOS",
+    "resources": [
+      {"name": "navigation_background.png", "size": "500x500"},
+      {"name": "logo.png", "size": "500x500"},
+      {"name": "loginpage_background.png", "size": "640x1136"},
+      {"name": "Icon-76@2x.png", "size": "152x152"},
+      {"name": "Icon-60@2x.png", "size": "120x120"},
+      {"name": "Icon-76.png", "size": "76x76"},
+      {"name": "Default.png", "size": "320x480"},
+      {"name": "Default@2x.png", "size": "640x960"},
+      {"name": "Default-568h@2x.png", "size": "640x1136"},
+      {"name": "Default-Portrait.png", "size": "768x1024"},
+      {"name": "Default-Portrait@2x.png", "size": "1536x2048"},
+      {"name": "Default-Landscape@2x.png", "size": "2048x1536"},
+      {"name": "Default-Landscape.png", "size": "1024x768"}
+    ]
+  },
+  "android": {
+    "projectName": "Cail.Android"
+  },
+  "hockeyApp": {
+    "apiKey": "1e7e75a35fd24e179760b9b88c3c713e",
+    "notify": false
+  },
+  "itunesConnect": {
+    "username": "app@tablika.com",
+    "password": "SMhereitis@123"
+  },
+  "server": {
+    "repository": {
+      "type": "git",
+      "url": "http://pmortazavi@192.168.10.129:7990/scm/cail/brands.git"
+    }
+  }
+}
