@@ -3,6 +3,7 @@
 [npm-image]: http://img.shields.io/npm/v/monkeymaker-cmdline.svg
 # MonkeyMaker-CommandLine
 [![NPM version][npm-image]][npm-url] [![Downloads][downloads-image]][npm-url]
+
 A command line interface for MonkeyMaker capable to installing, building and deploying monkey projects.
 
 ## Installation
