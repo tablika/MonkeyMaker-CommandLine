@@ -223,7 +223,8 @@ Create a new config. The config will be initialized but will not be added to the
     + resName (string) ... The name of the resource including file extension.
 
 ### Get Resource [GET]
-+ Response 200 (image/png)
+Content will be either an image or a vector based PDF.
++ Response 200 (image/png | application/pdf)
 
 ## Validation [/config/{name}/validation]
 + Parameters
@@ -247,8 +248,10 @@ Create a new config. The config will be initialized but will not be added to the
       "isValid": false,
       "remainingFiles": [
         {
-          "name": "logo.png",
-          "size": "500x500"
+          "name": "NavigationBackground.pdf",
+          "size": "320x64",
+          "desc": "Navigation background",
+          "mimeType": "application/pdf"
         }
       ]
     },
