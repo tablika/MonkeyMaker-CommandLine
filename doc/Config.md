@@ -92,7 +92,9 @@ Create a new config. The config will be initialized but will not be added to the
       "resources": [
         {
           "name": "Default.png",
-          "url": "/api/v1/config/tablika.prod/resources/Default.png"
+          "url": "/api/v1/config/tablika.prod/resources/Default.png",
+          "mimeType": "image/png",
+          "desc": "Something"
         }
       ],
       "isReady": false
