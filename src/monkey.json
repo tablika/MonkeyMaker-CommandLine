@@ -3,22 +3,7 @@
     "solutionPath": "/Users/peyman/Projects/Tablika/src/CAIL.sln"
   },
   "ios": {
-    "projectName": "Cail.iOS",
-    "resources": [
-      {"name": "navigation_background.png", "size": "500x500"},
-      {"name": "logo.png", "size": "500x500"},
-      {"name": "loginpage_background.png", "size": "640x1136"},
-      {"name": "Icon-76@2x.png", "size": "152x152"},
-      {"name": "Icon-60@2x.png", "size": "120x120"},
-      {"name": "Icon-76.png", "size": "76x76"},
-      {"name": "Default.png", "size": "320x480"},
-      {"name": "Default@2x.png", "size": "640x960"},
-      {"name": "Default-568h@2x.png", "size": "640x1136"},
-      {"name": "Default-Portrait.png", "size": "768x1024"},
-      {"name": "Default-Portrait@2x.png", "size": "1536x2048"},
-      {"name": "Default-Landscape@2x.png", "size": "2048x1536"},
-      {"name": "Default-Landscape.png", "size": "1024x768"}
-    ]
+    "projectName": "Cail.iOS"
   },
   "android": {
     "projectName": "Cail.Android"

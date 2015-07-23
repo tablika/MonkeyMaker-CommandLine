@@ -177,8 +177,10 @@ app.put('/:name/resources', function (req,res) {
     error(res, 'Config not found.', 404);
     return;
   }
+  var resourcesTemplateFilePath = path.join(configInfo.projectPath, 'resources_template.json');
+  if(!fs.existsSync(resourcesTemplateFilePath)) throw { message: 'iOS resources are not setup. No resource file is accepted as a result.' };
+  var appResourceList = JSON.parse(fs.readFileSync(resourcesTemplateFilePath, 'utf8'));
 
-  var appResourceList = monkey.options.ios.resources;
   if(!appResourceList) throw { errorMessage: 'iOS resources are not setup. set them up in monkey.json: ios.resources' };
   var linq = new LINQ(appResourceList);
   var response = { warnings: [], files: [], errors: [] };
@@ -187,29 +189,30 @@ app.put('/:name/resources', function (req,res) {
     // See if it's a known file.
     var fileInfo = linq.First(function(x){return x.name == file});
     var uploadedFile = req.files[file];
-
     if(!fileInfo) {
       fs.removeSync(uploadedFile.path);
       response.warnings.push({name: file, message: "Resource is not in the app bundle."});
       continue;
     }
-    if(uploadedFile.mimetype != 'image/png') {
-      fs.removeSync(uploadedFile.path);
-      response.errors.push({name: file, message: "Only PNG images are accepted."});
-      continue;
-    }
+    if(uploadedFile.mimetype == 'image/png') {
+      var dimensions = sizeOf(uploadedFile.path);
+      var sizeString = dimensions.width + 'x' + dimensions.height;
+      if(fileInfo.size != sizeString) {
+        response.errors.push({name: file, message: "Size should be: " + fileInfo.size});
+        fs.removeSync(uploadedFile.path);
+        continue;
+      }
+    } else if (uploadedFile.mimetype == 'application/pdf') {
 
-    var dimensions = sizeOf(uploadedFile.path);
-    var sizeString = dimensions.width + 'x' + dimensions.height;
-    if(fileInfo.size != sizeString) {
-      response.errors.push({name: file, message: "Size should be: " + fileInfo.size});
+    } else {
       fs.removeSync(uploadedFile.path);
+      response.errors.push({name: file, message: "Only PNG images and PDF vectors are accepted."});
       continue;
     }
 
     // Copy the file and delete it.
     response.files.push({name: file, url: path.join(req.originalUrl, file)});
-    fs.copySync(uploadedFile.path, path.join(configInfo.configPath, 'resources', file));
+    fs.copySync(uploadedFile.path, path.join(configInfo.configPath, 'resources', fileInfo.path, fileInfo.name));
     fs.removeSync(uploadedFile.path);
   }
   saveChangesIfValid(configInfo);
@@ -220,22 +223,28 @@ app.get('/:name/resources/:filename', function (req, res) {
 
   var name = req.params.name;
   var configInfo = monkey.getConfigInfo(name, 'ios');
-  var filePath = path.join(configInfo.configPath, 'resources', req.params.filename);
+
+  var resourcesTemplateFilePath = path.join(configInfo.projectPath, 'resources_template.json');
+  if(!fs.existsSync(resourcesTemplateFilePath)) throw { message: 'iOS resources are not setup. No resource file is accepted as a result.' };
+  var appResourceList = JSON.parse(fs.readFileSync(resourcesTemplateFilePath, 'utf8'));
+  var linq = new LINQ(appResourceList);
+  var fileInfo = linq.First(function(x){return x.name == req.params.filename});
+  var filePath = path.join(configInfo.configPath, 'resources', fileInfo.path, fileInfo.name);
   if(!fs.existsSync(filePath)) {
-    error(res, 'Resource not found.');
+    error(res, 'Resource not found.', 404);
     return;
   }
 
+  var extention = path.extname(filePath);
+
   var img = fs.readFileSync(filePath);
-  res.header("Content-Type", "image/png");
+  res.header("Content-Type", extention == ".pdf" ? "application/pdf" : "image/png");
   res.end(img, 'binary');
 
 });
 
 app.get('/:name/validation', function (req, res) {
-
   res.send(getValidationResult(req.params.name));
-
 });
 
 function getValidationResult(configName, bag) {
@@ -263,16 +272,22 @@ function getValidationResult(configName, bag) {
   } else { throw { msg: 'The settings file is not even created.' }; }
 
   // Step2: Make sure resources are fine.
-  var appResourceList = monkey.options.ios.resources;
-  if(!appResourceList) throw { message: 'iOS resources are not setup. No resource file is accepted as a result.' };
+  var resourcesTemplateFilePath = path.join(configInfo.projectPath, 'resources_template.json');
+  if(!fs.existsSync(resourcesTemplateFilePath)) throw { message: 'iOS resources are not setup. No resource file is accepted as a result.' };
+  var appResourceList = JSON.parse(fs.readFileSync(resourcesTemplateFilePath, 'utf8'));
 
   var resourceFiles = fs.readdirSync(path.join(configInfo.configPath, 'resources'))
-    .filter(function(x) { return /^[.]/.exec(x) ==null });
+    .filter(function(x) { return /^[.]/.exec(x) == null });
+
+  var resourcesRoot = path.join(configInfo.configPath, 'resources');
 
   response.resources = {isValid: true, remainingFiles: []};
   for(var key in appResourceList) {
-    if(resourceFiles.indexOf(appResourceList[key].name) == -1) {
+    var resInfo = appResourceList[key];
+
+    if(!fs.existsSync(path.join(resourcesRoot, resInfo.path || '', resInfo.name))) {
       response.resources.isValid = false;
+      delete appResourceList[key].path;
       response.resources.remainingFiles.push(appResourceList[key]);
     }
   }

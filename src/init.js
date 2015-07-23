@@ -60,6 +60,9 @@ module.exports.action = function (cmd) {
 
         var configTemplateFilePath = path.join(result.iosProjectName, 'config_template.json');
         if(!fs.existsSync(configTemplateFilePath)) fs.writeFileSync(configTemplateFilePath, '{}');
+
+        var resourcesTemplateFilePath = path.join(result.iosProjectName, 'resources_template.json');
+        if(!fs.existsSync(resourcesTemplateFilePath)) fs.writeFileSync(resourcesTemplateFilePath, '[]');
       }
       if(result.androidProjectName) {
         monkeyConfig.android = {
