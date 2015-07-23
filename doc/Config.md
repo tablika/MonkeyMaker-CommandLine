@@ -228,7 +228,7 @@ Create a new config. The config will be initialized but will not be added to the
 ## Validation [/config/{name}/validation]
 + Parameters
     + name (string) ... Name of the config
-    
+
 ### Get Validation Status [GET]
 + Response 200 (application/json)
 
