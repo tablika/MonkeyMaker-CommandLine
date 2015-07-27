@@ -19,7 +19,7 @@ $ npm install --global monkeymaker-cmdline
   * Build/Deploy configs.
   * iTunesConnect integration: upload IPAs to iTC, create and update certs.
   * HockeyApp integration: upload binaries to HockeyApp.
- 
+
 ## Documentation
 Refer to http://tablika.github.io/MonkeyMaker-CommandLine/ for REST API docs.
 
@@ -27,3 +27,4 @@ Refer to http://tablika.github.io/MonkeyMaker-CommandLine/ for REST API docs.
 - [ ] Slack integration.
 - [ ] TeamCity integration (to trigger builds using Build API).
 - [ ] Google Play integration.
+- [ ] API for creating jobs.
