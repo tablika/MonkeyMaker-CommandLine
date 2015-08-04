@@ -1,8 +1,8 @@
 {
   "name": "monkeymaker-cmdline",
-  "version": "1.0.23",
+  "version": "1.0.24",
   "description": "Command line tool for MonkeyMaker.js supporting teamcity integration and multiple config deployment.",
-  "main": "monkey.js",
+  "main": "src/monkey.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
