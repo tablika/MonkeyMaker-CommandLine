@@ -1,6 +1,6 @@
 {
   "name": "monkeymaker-cmdline",
-  "version": "1.0.22",
+  "version": "1.0.23",
   "description": "Command line tool for MonkeyMaker.js supporting teamcity integration and multiple config deployment.",
   "main": "monkey.js",
   "scripts": {
@@ -10,6 +10,10 @@
     "type": "git",
     "url": "git+https://github.com/tablika/MonkeyMaker-CommandLine.git"
   },
+  "files": [
+    "README.md",
+    "src"
+  ],
   "keywords": [
     "make",
     "build",
@@ -39,7 +43,7 @@
     "express": "^4.13.1",
     "fs-extra": "^0.21.0",
     "image-size": "^0.3.5",
-    "monkey-maker": "^1.0.4",
+    "monkey-maker": "^1.0.347",
     "monkeymaker-hockeyapp": "^1.0.10",
     "multer": "^0.1.8",
     "node-linq": "0.0.5",

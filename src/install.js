@@ -16,6 +16,7 @@ module.exports.action = function(cmd) {
     var monkey = new Monkey(monkeyConfig);
     var installationResult = monkey.installConfig(cmd.args[0], argv.platform, argv.version?{version:argv.version}:{});
     var any = false;
+    console.log(installationResult)
     var nameValuePair = installationResult.configSettings.flatten('name', 'value');
 
     var table = new Table({ chars: { 'top': '-' , 'top-mid': '-' , 'top-left': '-' , 'top-right': '-'
